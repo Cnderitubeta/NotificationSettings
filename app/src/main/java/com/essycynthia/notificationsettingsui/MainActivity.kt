@@ -1,26 +1,39 @@
 package com.essycynthia.notificationsettingsui
 
-import android.graphics.fonts.FontStyle
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.RadioButton
+import androidx.compose.material.RadioButtonDefaults
+import androidx.compose.material.Surface
+import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.essycynthia.notificationsettingsui.ui.theme.NotificationSettingsUITheme
@@ -29,8 +42,8 @@ import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
-import java.util.*
-import java.util.concurrent.TimeUnit
+import java.util.Date
+import java.util.Locale
 
 object Time {
     const val daily = "Daily"
@@ -57,8 +70,69 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+@Composable
+fun AppScreen() {
+    var developerUpdatedOn by remember { mutableStateOf("") }
+    var userUpdatedOn by remember { mutableStateOf("") }
 
-//@Preview(showBackground = true)
+
+    Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        OutlinedTextField(
+            value = developerUpdatedOn,
+            label = { Text(text = "Enter developer last update date") },
+            placeholder = { Text(text = "YYYY-MM-DD") },
+            onValueChange = {
+                developerUpdatedOn = it
+            }
+        )
+        OutlinedTextField(
+            value = userUpdatedOn,
+            label = { Text(text = "Enter playstore last update date") },
+            placeholder = { Text(text = "YYYY-MM-DD") },
+            onValueChange = {
+                userUpdatedOn = it
+            }
+        )
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val currentDate = Date()
+        var developerUpdateDate: Date? = null
+        var userUpdateDate: Date? = null
+
+        try {
+            if (developerUpdatedOn.isNotEmpty()) {
+                developerUpdateDate = dateFormat.parse(developerUpdatedOn)
+            }
+
+            if (userUpdatedOn.isNotEmpty()) {
+                userUpdateDate = dateFormat.parse(userUpdatedOn)
+            }
+        } catch (e: ParseException) {
+            // Handle the case when the date format is incorrect
+            // Show an error message or perform any necessary action
+            return
+        }
+        val isOutdated = userUpdateDate?.before(developerUpdateDate) ?: false
+        val daysOutOfDate = if (isOutdated && userUpdateDate != null) {
+            val currentDateWithoutTime = LocalDate.now()
+            val userUpdateDateWithoutTime = userUpdateDate.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+            ChronoUnit.DAYS.between(userUpdateDateWithoutTime, currentDateWithoutTime)
+        } else {
+            0 // Default value if conditions are not met
+        }
+        val notice = MyNotification(
+            LocalContext.current,
+            "Software Update Notification",
+            if (isOutdated) "The app is out of date for $daysOutOfDate days" else "The app is up to date"
+        )
+        notice.firNotification()
+
+        Text(text = "Is App Out of Date: ${if (isOutdated) "Yes" else "No"}")
+        Text(text = "Days Out of Date: $daysOutOfDate")
+
+    }
+}
 @Composable
 fun NotificationUi() {
     Column(
@@ -217,65 +291,6 @@ fun NotificationUi() {
         }
 
 
-    }
-}
-
-
-@Composable
-fun AppScreen() {
-    var developerUpdatedOn by remember { mutableStateOf("") }
-    var userUpdatedOn by remember { mutableStateOf("") }
-
-
-    Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        OutlinedTextField(
-            value = developerUpdatedOn,
-            label = { Text(text = "Enter developer last update date") },
-            placeholder = { Text(text = "YYYY-MM-DD") },
-            onValueChange = {
-                developerUpdatedOn = it
-            }
-        )
-        OutlinedTextField(
-            value = userUpdatedOn,
-            label = { Text(text = "Enter playstore last update date") },
-            placeholder = { Text(text = "YYYY-MM-DD") },
-            onValueChange = {
-                userUpdatedOn = it
-            }
-        )
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        val currentDate = Date()
-        var developerUpdateDate: Date? = null
-        var userUpdateDate: Date? = null
-
-        try {
-            if (developerUpdatedOn.isNotEmpty()) {
-                developerUpdateDate = dateFormat.parse(developerUpdatedOn)
-            }
-
-            if (userUpdatedOn.isNotEmpty()) {
-                userUpdateDate = dateFormat.parse(userUpdatedOn)
-            }
-        } catch (e: ParseException) {
-            // Handle the case when the date format is incorrect
-            // Show an error message or perform any necessary action
-            return
-        }
-        val isOutdated = userUpdateDate?.before(developerUpdateDate) ?: false
-        val daysOutOfDate = if (isOutdated && userUpdateDate != null) {
-            val currentDateWithoutTime = LocalDate.now()
-            val userUpdateDateWithoutTime = userUpdateDate.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-            ChronoUnit.DAYS.between(userUpdateDateWithoutTime, currentDateWithoutTime)
-        } else {
-            0 // Default value if conditions are not met
-        }
-
-
-        Text(text = "Is App Out of Date: ${if (isOutdated) "Yes" else "No"}")
-        Text(text = "Days Out of Date: $daysOutOfDate")
     }
 }
 

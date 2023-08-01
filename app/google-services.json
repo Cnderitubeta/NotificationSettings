@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "989567558805",
+    "project_id": "betrnotifications",
+    "storage_bucket": "betrnotifications.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:989567558805:android:2e486736b3595af643e79c",
+        "android_client_info": {
+          "package_name": "com.essycynthia.notificationsettingsui"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "989567558805-0v30v7de7l63qr0rh1eniiac3db1dhr5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAmXwavZaO-9X0Mg1SPNX6cBTq2wDnrNw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "989567558805-0v30v7de7l63qr0rh1eniiac3db1dhr5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
